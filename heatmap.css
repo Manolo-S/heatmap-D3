@@ -6,3 +6,15 @@
     stroke-width: 1;
     shape-rendering: crispEdges;
 }
+
+
+.y path,
+.y line
+{
+    fill: none;
+    stroke: white;
+    stroke-width: 0;
+    shape-rendering: crispEdges;
+}
+
+

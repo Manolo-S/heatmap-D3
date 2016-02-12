@@ -4,16 +4,17 @@ var x;
 var y;
 var xAxis;
 var yAxis;
+var legendXPos;
 var year;
 var dataSourceUrl = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json';
 
 var colorScheme = ['#a50026','#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'];
 
 var margin = {
-    top: 50,
+    top: 100,
     right: 20,
     bottom: 100,
-    left: 100
+    left: 200
 };
 
 var width = 1200 - margin.left - margin.right;
@@ -22,7 +23,9 @@ var height = 600 - margin.top - margin.bottom;
 var parseYear = d3.time.format('%Y').parse;
 var parseMonth = d3.time.format('%m').parse;
 
+function legendbarPos (){
 
+}
 
 function xyAxis(data){
 	
@@ -33,7 +36,8 @@ function xyAxis(data){
 	y.domain([parseMonth(String(12)), parseMonth(String(1))]);
 
 	xAxis = d3.svg.axis().scale(x).orient('bottom').ticks(26).tickFormat(d3.time.format('%Y'));
-	yAxis = d3.svg.axis().scale(y).orient('left').ticks(11).tickFormat(d3.time.format('%B'));
+           
+	yAxis = d3.svg.axis().scale(y).orient('left').ticks(12).tickFormat(d3.time.format('%B')).innerTickSize([0]);
 
 }
 
@@ -58,6 +62,11 @@ function buildChart(data) {
 		.attr('class', 'y axis')
 		.call(yAxis);
 
+	svg.append('g')
+		.attr('class', 'x axis')
+		.attr('transform', 'translate(0,' + (height + margin.bottom/3 + 4) + ')')
+		.call(xAxis);
+
 
 	svg.selectAll("rect")
         .data(data)
@@ -71,15 +80,21 @@ function buildChart(data) {
                 return y(parseMonth(String(d.month)));
             },
             width: width / (data.length / 12),
-            height: height / 12,
-            fill: function(d) {return colorQuantize(d.variance)}
+            height: (height / 12) + 4 ,
+            fill: function(d) {return colorQuantize(d.variance)},
         })
 
-        svg.append('g')
-		.attr('class', 'x axis')
-		.attr('transform', 'translate(0,' + (height + margin.bottom/2) + ')')
-		.call(xAxis);
-
+    svg.selectAll("rect")
+        .data(colorScheme)
+        .enter()
+        .append("rect")
+        .attr({
+            x: function(){ return legendbarPos},
+            y: height + margin.bottom/2,
+            width: (width/4),
+            height: 10,
+            fill: function(d) {return colorQuantize(d.variance)}
+        })
 }
 
 d3.json(dataSourceUrl, function(error, data) {
