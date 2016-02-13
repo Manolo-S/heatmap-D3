@@ -2,10 +2,14 @@
 
 var x;
 var y;
+var i = 930;
 var xAxis;
 var yAxis;
-var legendXPos;
+var legend;
+var legendAxis;
 var year;
+var minVariance;
+var maxVariance;
 var dataSourceUrl = 'https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/global-temperature.json';
 
 var colorScheme = ['#a50026','#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'];
@@ -23,8 +27,10 @@ var height = 600 - margin.top - margin.bottom;
 var parseYear = d3.time.format('%Y').parse;
 var parseMonth = d3.time.format('%m').parse;
 
-function legendbarPos (){
-
+function legendScale (data) {
+	legend = d3.scale.linear().range([0, 330]);
+	legend.domain(d3.extent(data, function(d){return d.variance}));
+	legendAxis = d3.svg.axis().scale(legend).orient('bottom').ticks(12);
 }
 
 function xyAxis(data){
@@ -45,9 +51,11 @@ function buildChart(data) {
 
 	xyAxis(data);
 
-	var maxVariance = d3.max(data, function(d) { return d.variance; });
-	var minVariance = d3.min(data, function(d) { return d.variance; });
+	legendScale(data);
 
+	maxVariance = d3.max(data, function(d) { return d.variance; });
+	minVariance = d3.min(data, function(d) { return d.variance; });
+	console.log(minVariance, maxVariance);
     var colorQuantize = d3.scale.quantize().domain([maxVariance, minVariance]).range(colorScheme); 
 
 
@@ -67,6 +75,23 @@ function buildChart(data) {
 		.attr('transform', 'translate(0,' + (height + margin.bottom/3 + 4) + ')')
 		.call(xAxis);
 
+	svg.append('g')
+		.attr('class', 'legend')
+		.attr('transform', 'translate(600,' + (height + margin.bottom -20) + ')')
+		.call(legendAxis);
+
+
+    svg.selectAll("rect")
+        .data(colorScheme)
+        .enter()
+        .append("rect")
+        .attr({
+            x: function(){i -= 30; return i},
+            y: 470,
+            width: 30,
+            height: 10,
+            fill: function(d) {return d}
+        })
 
 	svg.selectAll("rect")
         .data(data)
@@ -84,24 +109,15 @@ function buildChart(data) {
             fill: function(d) {return colorQuantize(d.variance)},
         })
 
-    svg.selectAll("rect")
-        .data(colorScheme)
-        .enter()
-        .append("rect")
-        .attr({
-            x: function(){ return legendbarPos},
-            y: height + margin.bottom/2,
-            width: (width/4),
-            height: 10,
-            fill: function(d) {return colorQuantize(d.variance)}
-        })
+
 }
 
 d3.json(dataSourceUrl, function(error, data) {
-
     if (error) {
         console.log(error);
     } else {
     	buildChart(data.monthlyVariance);
     }
 });
+
+
